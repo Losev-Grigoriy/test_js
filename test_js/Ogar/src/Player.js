@@ -1,8 +1,8 @@
-const Packet = require('./packet');
-const Vec2 = require('./modules/Vec2');
-const BinaryWriter = require("./packet/BinaryWriter");
+const Packet = require('./packet/index.js');
+const Vec2 = require('./modules/Vec2.js');
+const BinaryWriter = require("./packet/BinaryWriter.js");
 const {Quad} = require("./modules/QuadNode.js");
-const UserRoleEnum = require("./enum/UserRoleEnum");
+const UserRoleEnum = require("./enum/UserRoleEnum.js");
 
 class Player {
     constructor(server, socket) {

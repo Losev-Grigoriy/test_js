@@ -31,6 +31,10 @@ class Cell {
         this._radius2 = size * size;
         this._mass = this._radius2 / 100;
     }
+
+    getSize() {
+        return this.radius;
+    }
     // By default cell cannot eat anyone
     canEat(cell) {
         return false;
@@ -45,8 +49,13 @@ class Cell {
             if (this.radius >= 250 && prey.radius <= 41 && prey.type == 0)
                 prey._radius2 = 0; // Can't grow from players under 17 mass
         }
+        if (prey.foodType == 'doubleSize') {
+            return this.setSize(Math.sqrt(this._radius2 *2));
+        }
         return this.setSize(Math.sqrt(this._radius2 + prey._radius2));
     }
+
+    
     // Boost cell
     setBoost(distance, angle) {
         this.boostDistance = distance;

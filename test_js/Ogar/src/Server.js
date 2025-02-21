@@ -6,17 +6,17 @@ let os;
 const WebSocket = require("ws");
 
 // Project imports
-const Entity = require('./entity');
+const Entity = require('./entity/index.js');
 const Vec2 = require('./modules/Vec2.js');
 const Logger = require('./modules/Logger.js');
 const {QuadNode, Quad} = require('./modules/QuadNode.js');
-const Player = require('./Player');
-const Client = require('./Client');
-const PlayerCommand = require('./modules/PlayerCommand');
-const BotLoader = require('./ai/BotLoader');
-const Gamemode = require('./gamemodes');
-const Packet = require('./packet');
-const UserRoleEnum = require('./enum/UserRoleEnum');
+const Player = require('./Player.js');
+const Client = require('./Client.js');
+const PlayerCommand = require('./modules/PlayerCommand.js');
+const BotLoader = require('./ai/BotLoader.js');
+const Gamemode = require('./gamemodes/index.js');
+const Packet = require('./packet/index.js');
+const UserRoleEnum = require('./enum/UserRoleEnum.js');
 
 // Server implementation
 class Server {
@@ -621,6 +621,15 @@ class Server {
         m.check.position.add(m.p.product(r1));
     }
     // Resolves non-rigid body collision
+    // onEat(prey) {
+    //     if (prey.cellType == 1) { // Если это еда
+    //         if (prey.foodType == 'doubleSize') {
+    //             this.setSize(this.getSize() * 2); // Увеличиваем размер в 2 раза
+    //         } else {
+    //             this.setSize(Math.sqrt(this.getSizeSquared() + prey.getSizeSquared()));
+    //         }
+    //     }}
+
     resolveCollision(m) {
         let cell = m.cell;
         let check = m.check;
@@ -683,10 +692,19 @@ class Server {
         var cell = new Entity.Food(this, null, this.randomPos(), this.config.foodMinSize);
         if (this.config.foodMassGrow) {
             var maxGrow = this.config.foodMaxSize - cell.radius;
-            cell.setSize(cell.radius += maxGrow * Math.random());
+            
+            
+            if (Math.random() < 0.03) {
+                cell.setSize(25);
+                cell.foodType = 'doubleSize';
+                
+            } else {
+                cell.color = this.getRandomColor();
+                cell.setSize(cell.radius += maxGrow * Math.random());
+            }
+            
+            this.addNode(cell);
         }
-        cell.color = this.getRandomColor();
-        this.addNode(cell);
     }
     spawnVirus() {
         var virus = new Entity.Virus(this, null, this.randomPos(), this.config.virusMinSize);
