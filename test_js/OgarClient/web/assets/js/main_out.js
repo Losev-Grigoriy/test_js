@@ -1069,7 +1069,12 @@
         syncAppStamp = Date.now();
 
         const drawList = cells.list.slice(0).sort(cellSort);
-        for (const cell of drawList) cell.update(syncAppStamp);
+        for (const cell of drawList) {
+            cell.update(syncAppStamp);
+            if (cells.mine.includes(cell.id)) {
+                cell.updateEyes(mouseX, mouseY); // Обновление глаз только для игроков
+            }
+        }
         cameraUpdate();
         if (settings.jellyPhysics) {
             updateQuadtree();
@@ -1233,6 +1238,7 @@
             this.born = syncUpdStamp;
             this.points = [];
             this.pointsVel = [];
+            this.eyes = []; // Массив для хранения глаз
         }
         destroy(killerId) {
             cells.byId.delete(this.id);
@@ -1365,6 +1371,9 @@
             ctx.save();
             this.drawShape(ctx);
             this.drawText(ctx);
+            if (cells.mine.includes(this.id)) {
+                this.drawEyes(ctx); // Отрисовка глаз только для игроков
+            }
             ctx.restore();
         }
         drawShape(ctx) {
@@ -1434,6 +1443,29 @@
                     y += Math.max(this.s / 4.5, this.nameSize / 1.5);
                 drawText(ctx, true, this.x, y, this.nameSize / 2, this.drawNameSize / 2, mass);
             }
+        }
+        updateEyes(mouseX, mouseY) {
+            const eyeDistance = this.s * 0.6; // Расстояние глаз от центра клетки
+            const angle = Math.atan2(mouseY - this.y, mouseX - this.x);
+            const eyeX1 = this.x + eyeDistance * Math.cos(angle - Math.PI / 4);
+            const eyeY1 = this.y + eyeDistance * Math.sin(angle - Math.PI / 4);
+            const eyeX2 = this.x + eyeDistance * Math.cos(angle + Math.PI / 4);
+            const eyeY2 = this.y + eyeDistance * Math.sin(angle + Math.PI / 4);
+            this.eyes = [
+                { x: eyeX1, y: eyeY1, radius: this.s * 0.1 },
+                { x: eyeX2, y: eyeY2, radius: this.s * 0.1 }
+            ];
+        }
+        drawEyes(ctx) {
+            this.eyes.forEach(eye => {
+                ctx.beginPath();
+                ctx.arc(eye.x, eye.y, eye.radius, 0, 2 * Math.PI, false);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = 'black';
+                ctx.stroke();
+            });
         }
     }
 
@@ -1657,14 +1689,12 @@
             drawChat();
         };
         mainCanvas.onmousemove = (event) => {
-            mouseX = event.clientX;
-            mouseY = event.clientY;
+            mouseX = (event.clientX - mainCanvas.width / 2) / camera.scale + camera.x;
+            mouseY = (event.clientY - mainCanvas.height / 2) / camera.scale + camera.y;
+            
         };
         setInterval(() => {
-            sendMouseMove(
-                (mouseX - mainCanvas.width / 2) / camera.scale + camera.x,
-                (mouseY - mainCanvas.height / 2) / camera.scale + camera.y
-            );
+            sendMouseMove(mouseX, mouseY);
         }, 40);
         window.onresize = () => {
             const width = mainCanvas.width = window.innerWidth;
@@ -1787,7 +1817,6 @@
                         <p>Игра остановится через <span id="countdown">10</span> секунд.</p>
                     </div>
                     <div style="display: flex; align-items: center; justify-content: flex-end; padding: 1rem; border-top: 1px solid #dee2e6;">
-                      
                     </div>
                 </div>
             </div>
@@ -1799,6 +1828,12 @@
 
         playButton.addEventListener('click', function() {
             exitButton.style.display = 'block';
+            // Обновление глаз для всех клеток
+            cells.list.forEach(cell => {
+                if (cells.mine.includes(cell.id)) {
+                    cell.updateEyes(mouseX, mouseY);
+                }
+            });
         });
 
         exitButton.addEventListener('click', function() {
@@ -1828,3 +1863,14 @@
         });
     });
 })();
+
+function draw() {
+    
+
+    // Отрисовка глаз
+    players.forEach(player => {
+        player.drawEyes(ctx);
+    });
+
+    
+}

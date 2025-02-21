@@ -63,6 +63,7 @@ class Player {
             this.scramble();
         }
         this.userRole = UserRoleEnum.GUEST;
+        this.eyes = []; // Массив для хранения глаз
     }
     // Setters/Getters
     scramble() {
@@ -180,6 +181,7 @@ class Player {
         this.socket.client.process();
         if (this.isMi) return;
         this.updateView(this.cells.length);
+        this.updateEyes(); // Обновляем глаза
         const posPacket = new Packet.UpdatePosition(this, this.centerPos.x,
             this.centerPos.y, this._scale)
         this.socket.client.sendPacket(posPacket);
@@ -330,6 +332,28 @@ class Player {
         p.x = Math.min(p.x, this.server.border.maxx);
         p.y = Math.min(p.y, this.server.border.maxy);
         this.centerPos = p;
+    }
+
+    updateEyes() {
+        this.eyes = this.cells.map(cell => {
+            const eyeDistance = cell.radius * 0.6; // Расстояние глаз от центра клетки
+            const angle = Math.atan2(this.mouse.y - cell.y, this.mouse.x - cell.x);
+            const eyeX = cell.x + eyeDistance * Math.cos(angle);
+            const eyeY = cell.y + eyeDistance * Math.sin(angle);
+            return { x: eyeX, y: eyeY, radius: cell.radius * 0.1 };
+        });
+    }
+
+    drawEyes(ctx) {
+        this.eyes.forEach(eye => {
+            ctx.beginPath();
+            ctx.arc(eye.x, eye.y, eye.radius, 0, 2 * Math.PI, false);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'black';
+            ctx.stroke();
+        });
     }
 }
 
