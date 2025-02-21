@@ -1148,7 +1148,7 @@
     }
 
     function cellSort(a, b) {
-        return a.s === b.s ? a.id - b.id : a.s - b.s;
+        return a.s === b.s ? a.id - b.id : a.s - b.id;
     }
 
     function cameraUpdate() {
@@ -1747,4 +1747,84 @@
         byId('gallery').show(0.5);
     };
     window.addEventListener('DOMContentLoaded', init);
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var playButton = document.getElementById('play-btn');
+        var exitButton = document.createElement('button');
+        exitButton.id = 'exitButton';
+        exitButton.innerText = 'Выйти';
+        exitButton.style.position = 'fixed';
+        exitButton.style.top = '10px';
+        exitButton.style.left = '8.5%';
+        exitButton.style.zIndex = '1000';
+        exitButton.style.backgroundColor = 'red';
+        exitButton.style.color = 'white';
+        exitButton.style.border = 'none';
+        exitButton.style.padding = '10px 20px';
+        exitButton.style.cursor = 'pointer';
+        exitButton.style.display = 'none';
+        document.body.appendChild(exitButton);
+
+        var exitModal = document.createElement('div');
+        exitModal.id = 'exitModal';
+        exitModal.style.display = 'none';
+        exitModal.style.position = 'fixed';
+        exitModal.style.zIndex = '1050';
+        exitModal.style.left = '0';
+        exitModal.style.top = '0';
+        exitModal.style.width = '100%';
+        exitModal.style.height = '100%';
+        exitModal.style.overflow = 'hidden';
+        exitModal.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        exitModal.innerHTML = `
+            <div style="position: relative; width: auto; margin: 10px;">
+                <div style="position: relative; background-color: #fff; border: 1px solid #999; border-radius: 0.3rem; outline: 0;">
+                    <div style="display: flex; align-items: flex-start; justify-content: space-between; padding: 1rem; border-bottom: 1px solid #dee2e6; border-top-left-radius: 0.3rem; border-top-right-radius: 0.3rem;">
+                        <h5 style="margin: 0;">Выход из игры</h5>
+                        <button type="button" style="background: none; border: none; font-size: 1.5rem; line-height: 1; color: #000; text-shadow: 0 1px 0 #fff; opacity: .5;" onclick="document.getElementById('exitModal').style.display='none'; clearInterval(countdownInterval);">&times;</button>
+                    </div>
+                    <div style="position: relative; flex: 1 1 auto; padding: 1rem;">
+                        <p>Игра остановится через <span id="countdown">10</span> секунд.</p>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: flex-end; padding: 1rem; border-top: 1px solid #dee2e6;">
+                      
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(exitModal);
+
+        var countdownElement = document.getElementById('countdown');
+        var countdownInterval;
+
+        playButton.addEventListener('click', function() {
+            exitButton.style.display = 'block';
+        });
+
+        exitButton.addEventListener('click', function() {
+            exitModal.style.display = 'block';
+            var countdown = 10;
+            countdownElement.innerText = countdown;
+            countdownInterval = setInterval(function() {
+                countdown--;
+                countdownElement.innerText = countdown;
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    exitModal.style.display = 'none';
+                    // Перезагрузка сайта
+                    window.location.reload();
+                }
+            }, 1000);
+        });
+
+        document.querySelector('#exitModal .close').addEventListener('click', function() {
+            exitModal.style.display = 'none';
+            clearInterval(countdownInterval);
+        });
+
+        document.getElementById('cancelButton').addEventListener('click', function() {
+            exitModal.style.display = 'none';
+            clearInterval(countdownInterval);
+        });
+    });
 })();
